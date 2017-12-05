@@ -40,10 +40,9 @@ def residential_application_sort_outcome(x):
 # =============================================================================
 # Read in files
 # =============================================================================
-application_data:pd.DataFrame = pd.read_csv('Admission Application Data.csv')
-funding_data:pd.DataFrame = pd.read_csv('Vac Work Information Financial.csv')
-residence_data:pd.DataFrame = pd.read_csv('Vac Work Information Residential.csv')
-cost_data:pd.DataFrame = pd.read_csv('Vac Work Information CourseFee.csv')
+application_data = pd.DataFrame = pd.read_csv('Admission Application Data.csv')
+funding_data = pd.DataFrame = pd.read_csv('Vac Work Information Financial.csv')
+residence_data = pd.DataFrame = pd.read_csv('Vac Work Information Residential.csv')
 
 # =============================================================================
 # Rename all columns to remove spaces
@@ -51,11 +50,11 @@ cost_data:pd.DataFrame = pd.read_csv('Vac Work Information CourseFee.csv')
 application_data= application_data.rename(columns=lambda x: x.strip().replace(' ','_'))
 funding_data = funding_data.rename(columns=lambda x: x.strip().replace(' ','_'))
 residence_data = residence_data.rename(columns=lambda x: x.strip().replace(' ','_'))
-cost_data = cost_data.rename(columns=lambda x: x.strip().replace(' ','_'))
+#cost_data = cost_data.rename(columns=lambda x: x.strip().replace(' ','_'))
 
 
 a = residence_data['Res_Appl_Status_Description'].value_counts()
-b = cost_data['Item_type_descr'].value_counts()
+# b = cost_data['Item_type_descr'].value_counts()
 c = application_data['Matric_Province'].value_counts()
 
 
@@ -79,10 +78,11 @@ residence_data.drop_duplicates(keep='first',subset=['Student_Number', 'Calendar_
 # Joins
 # =============================================================================
 join1 = application_data.merge(funding_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Application_Calendar_Year'], how='left')
-join2:pd.DataFrame = join1.merge(residence_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Calendar_Instance_Year'], how='left')
+join2 = pd.DataFrame = join1.merge(residence_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Calendar_Instance_Year'], how='left')
 join2.drop(['Application_Calendar_Year', 'Calendar_Instance_Year'], axis=1, inplace = True)
 
 join2.rename(index=str, columns={'Application_Status_Description' : 'Fin_Appl_Status_Description'}, inplace=True)
+
 
 # application_data['Firm_Offers'] = application_data['Firm_Offers'].map(lambda x: change_greater_than_zero_to_one(x))
 # application_data = application_data[application_data['Gender'] != 'UNKNOWN']
