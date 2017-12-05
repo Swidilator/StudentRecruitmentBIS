@@ -48,12 +48,13 @@ cost_data:pd.DataFrame = pd.read_csv('Vac Work Information CourseFee.csv')
 # =============================================================================
 # Rename all columns to remove spaces
 # =============================================================================
-application_data= application_data.rename(columns=lambda x: x.strip().replace(' ','_'))
-funding_data = funding_data.rename(columns=lambda x: x.strip().replace(' ','_'))
-residence_data = residence_data.rename(columns=lambda x: x.strip().replace(' ','_'))
-cost_data = cost_data.rename(columns=lambda x: x.strip().replace(' ','_'))
+application_data    = application_data.rename(columns=lambda x: x.strip().replace(' ','_'))
+funding_data        = funding_data.rename(columns=lambda x: x.strip().replace(' ','_'))
+residence_data      = residence_data.rename(columns=lambda x: x.strip().replace(' ','_'))
+cost_data           = cost_data.rename(columns=lambda x: x.strip().replace(' ','_'))
 
 
+# View counts of items in specific columns
 a = residence_data['Res_Appl_Status_Description'].value_counts()
 b = cost_data['Item_type_descr'].value_counts()
 c = application_data['Matric_Province'].value_counts()
@@ -62,24 +63,29 @@ c = application_data['Matric_Province'].value_counts()
 # =============================================================================
 # Drop and Transfrom from other tables
 # =============================================================================
+
+# Funding preparation
 funding_data['Application_Status_Description'] = funding_data['Application_Status_Description'].map(lambda x: financial_application_sort_outcome(x))
 funding_data.sort_values(by=['Student_Number','Application_Calendar_Year','Application_Status_Description'], ascending = False, inplace=True)
 funding_data.drop('Application_Status', axis=1, inplace = True)
 funding_data.drop('Funding_Level', axis=1, inplace = True)
 funding_data.drop_duplicates(keep='first',subset=['Student_Number', 'Application_Calendar_Year'], inplace = True)
 
+# Residence preparation
 residence_data.drop('Res_Application_Status', axis=1, inplace = True)
 residence_data['Res_Appl_Status_Description'] = residence_data['Res_Appl_Status_Description'].map(lambda x: residential_application_sort_outcome(x))
 residence_data.sort_values(by=['Student_Number', 'Calendar_Instance_Year', 'Res_Appl_Status_Description'], ascending = False, inplace = True)
 residence_data.drop_duplicates(keep='first',subset=['Student_Number', 'Calendar_Instance_Year'], inplace = True)
 
-
-
 # =============================================================================
 # Joins
 # =============================================================================
-join1 = application_data.merge(funding_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Application_Calendar_Year'], how='left')
+join1:pd.DataFrame = application_data.merge(funding_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Application_Calendar_Year'], how='left')
 join2:pd.DataFrame = join1.merge(residence_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Calendar_Instance_Year'], how='left')
+
+# =============================================================================
+# Drop Date columns from joined tables and rename new columns
+# =============================================================================
 join2.drop(['Application_Calendar_Year', 'Calendar_Instance_Year'], axis=1, inplace = True)
 
 join2.rename(index=str, columns={'Application_Status_Description' : 'Fin_Appl_Status_Description'}, inplace=True)
