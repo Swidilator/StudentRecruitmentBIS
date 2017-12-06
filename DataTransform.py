@@ -8,7 +8,8 @@ This is a temporary script file.
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+from sklearn.preprocessing import LabelBinarizer
+from sklearn_pandas import DataFrameMapper
 
 
 def change_greater_than_zero_to_one(x):
@@ -80,9 +81,47 @@ residence_data.drop_duplicates(keep='first',subset=['Student_Number', 'Calendar_
 join1 = application_data.merge(funding_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Application_Calendar_Year'], how='left')
 join2 = pd.DataFrame = join1.merge(residence_data, left_on=['Student_Number', 'Calendar_Inst_Year'], right_on=['Student_Number', 'Calendar_Instance_Year'], how='left')
 join2.drop(['Application_Calendar_Year', 'Calendar_Instance_Year'], axis=1, inplace = True)
-
 join2.rename(index=str, columns={'Application_Status_Description' : 'Fin_Appl_Status_Description'}, inplace=True)
 
+#join2.drop(['Yos','New_to_Wits/Returning'])
+
+#dropping theses columns since they only have 1 posible instance
 
 # application_data['Firm_Offers'] = application_data['Firm_Offers'].map(lambda x: change_greater_than_zero_to_one(x))
 # application_data = application_data[application_data['Gender'] != 'UNKNOWN']
+
+#==============================================================================
+#Feature encoding
+#==============================================================================
+features = list(join2.columns)
+to_encode = list([]);
+#Changing nan to make the algorithm work
+for x in features :
+    join2[x].dropna(inplace = True)
+
+for x in features :
+    #encode only and only if colomn contains string
+    if isinstance(join2[x][0],str) and x != 'Student_Number' and x != 'School_name':
+            to_encode.append(x)
+join2['Quintile'].replace('1','QA',inplace = True)
+join2['Quintile'].replace('2','QB',inplace = True)
+join2['Quintile'].replace('3','QC',inplace = True)
+join2['Quintile'].replace('4','QD',inplace = True)
+join2['Quintile'].replace('5','QE',inplace = True)
+join2['Quintile'].replace('6','QF',inplace = True)
+join2['Quintile'].replace('nan','Q1',regex = True,inplace = True)
+
+
+mapper  = DataFrameMapper([
+    ('Gender',LabelBinarizer()),
+    ('Race',LabelBinarizer()),
+    ('Nationality_Status',LabelBinarizer()),
+    ('UG_/_PG_Code_Desc',LabelBinarizer()),
+    ('Descr',LabelBinarizer()),
+    ('New_to_Wits/Returning',LabelBinarizer()),
+    ('Yos',LabelBinarizer()),
+    ('Student_Number',None)
+])
+
+to_encode.append('Student_Number')
+mapper.fit_transform(join2[to_encode]).tofile('output', sep = ';')
